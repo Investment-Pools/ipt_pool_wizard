@@ -1,0 +1,1566 @@
+{
+  "version": "0.1.0",
+  "name": "refi_ipt",
+  "instructions": [
+    {
+      "name": "initPool",
+      "docs": [
+        "Initialize a new investment pool (step 1: create pool account)"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "USDC mint"
+          ]
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolId",
+          "type": "u64"
+        },
+        {
+          "name": "config",
+          "type": {
+            "defined": "PoolConfig"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initPoolStep2",
+      "docs": [
+        "Initialize pool mints and reserve (step 2: create IPT mint and USDC reserve)"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "USDC mint (to get decimals)"
+          ]
+        },
+        {
+          "name": "iptMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "IPT mint"
+          ]
+        },
+        {
+          "name": "usdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "USDC reserve token account"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "userDeposit",
+      "docs": [
+        "User deposits net USDC into pool and receives IPT (fees calculated internally)"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdcAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User's USDC token account"
+          ]
+        },
+        {
+          "name": "userIptAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User's IPT token account"
+          ]
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool's USDC reserve"
+          ]
+        },
+        {
+          "name": "iptMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "IPT mint"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "netUsdcAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minIptAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "userWithdraw",
+      "docs": [
+        "User withdraws USDC by burning net IPT (fees calculated internally)"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdcAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User's USDC token account"
+          ]
+        },
+        {
+          "name": "userIptAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User's IPT token account"
+          ]
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool's USDC reserve"
+          ]
+        },
+        {
+          "name": "iptMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "IPT mint"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "netIptAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minUsdcAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "adminDepositUsdc",
+      "docs": [
+        "Admin deposits USDC to increase pool reserves"
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "adminUsdcAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Admin's USDC token account"
+          ]
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool's USDC reserve"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "adminWithdrawUsdc",
+      "docs": [
+        "Admin withdraws USDC from pool reserves"
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "adminUsdcAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Admin's USDC token account"
+          ]
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool's USDC reserve"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "feeCollectorWithdraw",
+      "docs": [
+        "Fee collector withdraws accumulated fees"
+      ],
+      "accounts": [
+        {
+          "name": "feeCollector",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "feeCollectorUsdcAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Fee collector's USDC token account"
+          ]
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool's USDC reserve"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "adminUpdateConfig",
+      "docs": [
+        "Admin updates pool configuration (and optionally wallet config - 5 wallets)"
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "newConfig",
+          "type": {
+            "defined": "PoolConfig"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateExchangeRate",
+      "docs": [
+        "Update exchange rate (oracle only)"
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "newRate",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "userWithdrawalRequest",
+      "docs": [
+        "User creates withdrawal request"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Pool state account (read-only for validation)"
+          ]
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userIptAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "User's IPT token account (read-only for validation)"
+          ]
+        },
+        {
+          "name": "iptMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "IPT mint (read-only for validation)"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "netIptAmount",
+          "type": "u64"
+        },
+        {
+          "name": "minUsdcAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "batchExecuteWithdraw",
+      "docs": [
+        "Batch execute withdrawal requests from the queue"
+      ],
+      "accounts": [
+        {
+          "name": "executor",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Backend/Keeper authority"
+          ]
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "poolUsdcReserve",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "iptMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amounts",
+          "type": {
+            "vec": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cancelWithdrawalRequest",
+      "docs": [
+        "User cancels their own withdrawal request"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Pool state account"
+          ]
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Pool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolAuthority",
+            "docs": [
+              "Pool authority (PDA)"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcMint",
+            "docs": [
+              "USDC mint address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "poolId",
+            "type": "u64"
+          },
+          {
+            "name": "iptMint",
+            "docs": [
+              "IPT mint address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "usdcReserve",
+            "docs": [
+              "USDC reserve token account"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "pendingQueue",
+            "type": {
+              "vec": {
+                "defined": "PendingWithdraw"
+              }
+            }
+          },
+          {
+            "name": "currentExchangeRate",
+            "docs": [
+              "Current exchange rate (IPT to USDC, scaled by 1e6)",
+              "e.g., 1.02 USDC per IPT = 1_020_000"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalIptSupply",
+            "docs": [
+              "Total IPT supply in circulation"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalUsdcReserves",
+            "docs": [
+              "Total USDC reserves in pool"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalAccumulatedFees",
+            "docs": [
+              "Total accumulated fees"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "maxTotalSupply",
+            "docs": [
+              "Maximum total IPT supply allowed (0 = unlimited)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "config",
+            "docs": [
+              "Pool configuration"
+            ],
+            "type": {
+              "defined": "PoolConfig"
+            }
+          },
+          {
+            "name": "poolState",
+            "docs": [
+              "Pool state"
+            ],
+            "type": {
+              "defined": "PoolState"
+            }
+          },
+          {
+            "name": "lastRateUpdate",
+            "docs": [
+              "Timestamps"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "PendingWithdraw",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "minUsdcAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "adminAuthority",
+            "docs": [
+              "Admin authority"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "oracleAuthority",
+            "docs": [
+              "Oracle authority"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "feeCollector",
+            "docs": [
+              "Fee collector address"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "depositFeeBps",
+            "docs": [
+              "Fee rates in basis points (100 = 1%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "withdrawalFeeBps",
+            "type": "u16"
+          },
+          {
+            "name": "managementFeeBps",
+            "type": "u16"
+          },
+          {
+            "name": "initialExchangeRate",
+            "docs": [
+              "Initial exchange rate (IPT to USDC, scaled by 1e6)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "maxTotalSupply",
+            "docs": [
+              "Maximum total IPT supply (0 = unlimited)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "maxQueueSize",
+            "docs": [
+              "Maximum withdrawal queue size"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "poolName",
+            "docs": [
+              "Pool name (max 50 chars)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "tokenSymbol",
+            "docs": [
+              "Token symbol (max 10 chars)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                10
+              ]
+            }
+          },
+          {
+            "name": "targetApyBps",
+            "docs": [
+              "Target APY in basis points (e.g. 1000 = 10%)"
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Frozen"
+          },
+          {
+            "name": "DepositOnly"
+          },
+          {
+            "name": "WithdrawOnly"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "AddedToQueue",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "u32",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AdminDepositExecuted",
+      "fields": [
+        {
+          "name": "admin",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AdminWithdrawExecuted",
+      "fields": [
+        {
+          "name": "admin",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "remainingReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "BatchWithdrawExecuted",
+      "fields": [
+        {
+          "name": "executor",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "successfulCount",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "skippedCount",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "totalIptBurned",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalUsdcTransferred",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalFees",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newPoolReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ExchangeRateUpdated",
+      "fields": [
+        {
+          "name": "oracle",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oldRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "FeeCollectorWithdrawExecuted",
+      "fields": [
+        {
+          "name": "feeCollector",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "remainingAccumulatedFees",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PoolConfigUpdated",
+      "fields": [
+        {
+          "name": "admin",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "configField",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "oldValue",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "newValue",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PoolInitialized",
+      "fields": [
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "adminAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oracleAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeCollector",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "usdcMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "initialExchangeRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        },
+        {
+          "name": "poolName",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "tokenSymbol",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "targetApyBps",
+          "type": "u16",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UserDepositExecuted",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "usdcAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "depositFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "exchangeRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newIptSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UserWithdrawalExecuted",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "usdcAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "withdrawalFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "exchangeRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newIptSupply",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "newReserves",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UserWithdrawalRequested",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "expectedUsdcAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "expectedWithdrawalFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "minUsdcAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "exchangeRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WithdrawExecuted",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "usdcAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "withdrawalFee",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "batchIndex",
+          "type": "u8",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WithdrawSkipped",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "batchIndex",
+          "type": "u8",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WithdrawalCancelled",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "iptAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "position",
+          "type": "u32",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UnauthorizedAdmin",
+      "msg": "Unauthorized: Only admin can perform this action"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedOracle",
+      "msg": "Unauthorized: Only oracle can update exchange rate"
+    },
+    {
+      "code": 6002,
+      "name": "UnauthorizedFeeCollector",
+      "msg": "Unauthorized: Only fee collector can withdraw fees"
+    },
+    {
+      "code": 6003,
+      "name": "UnauthorizedExecutor",
+      "msg": "Unauthorized: Only authorized executor can process batch withdrawals"
+    },
+    {
+      "code": 6004,
+      "name": "PoolPaused",
+      "msg": "Pool is currently paused"
+    },
+    {
+      "code": 6005,
+      "name": "PoolFrozen",
+      "msg": "Pool is frozen"
+    },
+    {
+      "code": 6006,
+      "name": "DepositsDisabled",
+      "msg": "Deposits are disabled"
+    },
+    {
+      "code": 6007,
+      "name": "WithdrawalsDisabled",
+      "msg": "Withdrawals are disabled"
+    },
+    {
+      "code": 6008,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientReserves",
+      "msg": "Insufficient reserves for withdrawal"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientAccumulatedFees",
+      "msg": "Insufficient accumulated fees"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidExchangeRate",
+      "msg": "Invalid exchange rate - must be greater than 0"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidFeeRate",
+      "msg": "Invalid fee rate - must be less than 10000 basis points"
+    },
+    {
+      "code": 6013,
+      "name": "TokenAccountOwnerMismatch",
+      "msg": "Token account owner mismatch"
+    },
+    {
+      "code": 6014,
+      "name": "MintMismatch",
+      "msg": "Mint mismatch"
+    },
+    {
+      "code": 6015,
+      "name": "MathematicalOverflow",
+      "msg": "Mathematical overflow"
+    },
+    {
+      "code": 6016,
+      "name": "MathematicalUnderflow",
+      "msg": "Mathematical underflow"
+    },
+    {
+      "code": 6017,
+      "name": "DivisionByZero",
+      "msg": "Division by zero"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidConfigParameter",
+      "msg": "Invalid configuration parameter"
+    },
+    {
+      "code": 6019,
+      "name": "InsufficientAccountBalance",
+      "msg": "Insufficient account balance"
+    },
+    {
+      "code": 6020,
+      "name": "ZeroAmountNotAllowed",
+      "msg": "Zero amount not allowed"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6022,
+      "name": "InsufficientApproval",
+      "msg": "Insufficient approval for token operation"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidDelegate",
+      "msg": "Invalid delegate authority"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidUsdcMint",
+      "msg": "Invalid USDC mint address"
+    },
+    {
+      "code": 6025,
+      "name": "EmptyWithdrawalBatch",
+      "msg": "Empty withdrawal batch not allowed"
+    },
+    {
+      "code": 6026,
+      "name": "BatchSizeTooLarge",
+      "msg": "Batch size too large - maximum 10 withdrawals per transaction"
+    },
+    {
+      "code": 6027,
+      "name": "InvalidUserAccount",
+      "msg": "Invalid user account"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidAccountsCount",
+      "msg": "Invalid accounts count - must provide 2 accounts per user"
+    },
+    {
+      "code": 6029,
+      "name": "InvalidMint",
+      "msg": "Invalid mint address"
+    },
+    {
+      "code": 6030,
+      "name": "NotDelegated",
+      "msg": "Token not delegated to pool authority"
+    },
+    {
+      "code": 6031,
+      "name": "InsufficientDelegation",
+      "msg": "Insufficient delegation amount"
+    },
+    {
+      "code": 6032,
+      "name": "MaxTotalSupplyExceeded",
+      "msg": "Maximum total supply exceeded - deposit would exceed max_total_supply limit"
+    },
+    {
+      "code": 6033,
+      "name": "QueueFull",
+      "msg": "Withdrawal queue is full - maximum capacity reached"
+    },
+    {
+      "code": 6034,
+      "name": "AlreadyInQueue",
+      "msg": "User already has a pending withdrawal request"
+    },
+    {
+      "code": 6035,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority pubkey - cannot be default pubkey"
+    },
+    {
+      "code": 6036,
+      "name": "InvalidPoolName",
+      "msg": "Invalid pool name"
+    },
+    {
+      "code": 6037,
+      "name": "InvalidTokenSymbol",
+      "msg": "Invalid token symbol"
+    },
+    {
+      "code": 6038,
+      "name": "InvalidTargetAPY",
+      "msg": "Invalid target APY"
+    },
+    {
+      "code": 6039,
+      "name": "PoolAlreadyInitialized",
+      "msg": "Pool with this ID already initialized"
+    }
+  ]
+}
