@@ -251,8 +251,7 @@ body {
 }
 
 .fr3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 14px
 }
 

@@ -589,9 +589,196 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "initFaucetMint",
+      "docs": [
+        "Initialize faucet mint for testing (creates fake USDC)"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "faucetConfig",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Faucet config account (stores faucet state)"
+          ]
+        },
+        {
+          "name": "faucetAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "faucetMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Faucet mint (fake USDC for testing)"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "decimals",
+          "type": "u8"
+        },
+        {
+          "name": "maxAmountPerRequest",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mintUsdc",
+      "docs": [
+        "Faucet: Mint test tokens to user"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userFaucetRecord",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User faucet record - only init ONCE per user",
+            "If already exists, transaction will fail (user already fauceted)"
+          ]
+        },
+        {
+          "name": "faucetConfig",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Faucet config account"
+          ]
+        },
+        {
+          "name": "faucetAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "faucetMint",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Faucet mint (fake USDC)"
+          ]
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "User's token account for faucet mint"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
+    {
+      "name": "FaucetConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "faucetMint",
+            "docs": [
+              "Faucet mint address (fake USDC for testing)"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "faucetAuthority",
+            "docs": [
+              "Faucet authority (PDA that can mint)"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "decimals",
+            "docs": [
+              "Token decimals (6 for USDC-like)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "maxAmountPerRequest",
+            "docs": [
+              "Maximum amount per faucet request (in token base units)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "totalMinted",
+            "docs": [
+              "Total amount minted (for tracking)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "createdAt",
+            "docs": [
+              "Timestamp of creation"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bumps"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "authorityBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
     {
       "name": "Pool",
       "type": {
@@ -706,6 +893,42 @@
             "name": "bump",
             "docs": [
               "PDA bump"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserFaucetRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "docs": [
+              "User who fauceted"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "Amount fauceted"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "faucetedAt",
+            "docs": [
+              "Timestamp of faucet"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump for PDA"
             ],
             "type": "u8"
           }
@@ -1000,6 +1223,66 @@
         },
         {
           "name": "newRate",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "FaucetExecuted",
+      "fields": [
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "mint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalMinted",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "timestamp",
+          "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "FaucetInitialized",
+      "fields": [
+        {
+          "name": "faucetMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "faucetAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "decimals",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "maxAmountPerRequest",
           "type": "u64",
           "index": false
         },

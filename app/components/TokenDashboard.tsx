@@ -23,6 +23,7 @@ const IptDashboard: React.FC<Props> = ({
     return initProgram();
   }, []);
   const sdk = useInitProgramSdk(program, { publicKey, signTransaction: signTransaction || (async (tx) => tx) });
+  const [loadingFaucet, setLoadingFaucet] = useState<boolean>(false);
   const [loadingDeposit, setLoadingDeposit] = useState<boolean>(false);
   const [loadingWithdraw, setLoadingWithdraw] = useState<boolean>(false);
 
@@ -93,6 +94,32 @@ const IptDashboard: React.FC<Props> = ({
     );
   }
 
+
+  const onConfirmFaucet = async () => {
+    try {
+      setLoadingFaucet(true);
+      if (!sdk) {
+        toast.error('SDK not initialized');
+        return;
+      }
+      const sig = await sdk.mintUsdcFromFaucet();
+      if (sig) {
+        console.log('Faucet successful, signature:', sig);
+        toast.success('Faucet successfully!');
+        await sleep(3000);
+        console.log('Start fetching balance');
+        fetchBalances();
+        setLoadingFaucet(false);
+      }
+    } catch (err: unknown) {
+      setLoadingFaucet(false);
+      toast.error(`Faucet Failed!`);
+      console.error(err);
+    }
+    finally {
+      setLoadingFaucet(false);
+    }
+  };
 
   const onConfirmDeposit = async () => {
     try {
@@ -207,7 +234,7 @@ const IptDashboard: React.FC<Props> = ({
           <div className="m">
             <div className="ml">TVL</div>
             <div className="mv" id="dTVL">
-              $0.00
+              ${pool.totalUsdcReserves ? formatUnits(BigInt(parseFloat(pool.totalUsdcReserves.toString())), USDC_DECIMALS) : 0}
             </div>
           </div>
           <div className="m">
@@ -332,14 +359,24 @@ const IptDashboard: React.FC<Props> = ({
                   : "0.0000"}
               </div>
             </div>
-            <div className="m">
+            {/* <div className="m">
               <div className="ml">Gain / loss</div>
               <div className="mv" id="uGain" style={{ color: "var(--gl)" }}>
                 +$0.00
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
+      </div>
+      <div className='flex flex-col gap-5'>
+        <span>Click the button below to claim 100,000 Test USDC to test out the Pool! </span>
+        <button
+          className="ab w max-w-50"
+          onClick={onConfirmFaucet}
+          disabled={loadingFaucet}
+        >
+          {loadingFaucet ? "Processing..." : "Claim 100,000 Test USDC"}
+        </button>
       </div>
     </div>
   );

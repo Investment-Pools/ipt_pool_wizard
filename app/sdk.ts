@@ -3,6 +3,7 @@
 import { Idl } from '@project-serum/anchor/dist/cjs/idl';
 import { Program } from '@project-serum/anchor/dist/cjs/program';
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
   getAccount,
   getAssociatedTokenAddressSync,
@@ -14,7 +15,7 @@ import { Pool } from './page';
 import { toast } from 'react-toastify';
 export const REFI_POOL_PROGRAM_ID = new PublicKey('FmEbrWpM7JJX6a7LSDGCAqmKjpbzvNwBAH1rv1M5utji');
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-export const USDC_MINT = new PublicKey('SYr5xP8c6A1uS33veGEJgposPxdpnUYAJZev6NkikP3');
+export const USDC_MINT = new PublicKey('6gw9Tbuws5ay25dwNHicxd3W3PbyJUY11aRp8d2uwYe8');
 export const NAV_WALLET = new PublicKey('26TbGcvMErPNmihXtqa2ZCp7WvDhpthNeNnKFaUMJfuA');
 export const GENERATED_POOLS_KEY = new PublicKey('36uyNvFrV8B7b4Pg3d8Fs5QmLxDfRmCF4pef3dRcAAvf');
 export const USDC_DECIMALS = 6;
@@ -161,7 +162,16 @@ export const createRefiPoolSDK = ({
       throw new Error('Wallet not connected');
     }
   };
+  const deriveFaucetMint = (programId: PublicKey = REFI_POOL_PROGRAM_ID): PublicKey => {
+    return PublicKey.findProgramAddressSync([Buffer.from("faucet_mint")], programId)[0];
+  }
 
+  const deriveFaucetConfig = (programId: PublicKey = REFI_POOL_PROGRAM_ID): PublicKey => {
+    return PublicKey.findProgramAddressSync([Buffer.from("faucet_config")], programId)[0];
+  }
+  const deriveFaucetAuthority = (programId: PublicKey = REFI_POOL_PROGRAM_ID): PublicKey => {
+    return PublicKey.findProgramAddressSync([Buffer.from("faucet_authority")], programId)[0];
+  }
 
   const poolIdToSeed = (poolId: BN | number): Buffer => {
     const idBn = BN.isBN(poolId) ? poolId : new BN(poolId);
@@ -178,6 +188,16 @@ export const createRefiPoolSDK = ({
       program.program.programId
     );
     return poolPda;
+  }
+
+  const deriveUserFaucetRecord = (
+    user: PublicKey,
+    programId: PublicKey = REFI_POOL_PROGRAM_ID
+  ): PublicKey => {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from("user_faucet"), user.toBuffer()],
+      programId
+    )[0];
   }
 
   const deriveIptMintPda = (poolPda: PublicKey): PublicKey => {
@@ -210,22 +230,34 @@ export const createRefiPoolSDK = ({
     }
   };
 
-  const buildAndSendTx = async (tx: Transaction) => {
+  const buildAndSendTx = async (tx: Transaction): Promise<string> => {
+    if (!wallet) {
+      throw new Error('Wallet not initialized');
+    }
     assertWallet();
 
-    tx.feePayer = wallet!.publicKey;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    const latestBlockhash = await connection.getLatestBlockhash();
 
-    const signed = await wallet!.signTransaction(tx);
-    return connection.sendRawTransaction(signed.serialize());
+    tx.feePayer = wallet.publicKey;
+    tx.recentBlockhash = latestBlockhash.blockhash;
+
+    const signed = await wallet.signTransaction(tx);
+
+    const sig = await connection.sendRawTransaction(signed.serialize(), {
+      skipPreflight: true,
+    });
+
+    await connection.confirmTransaction(
+      {
+        signature: sig,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      'confirmed'
+    );
+
+    return sig;
   };
-  /**
-   * Pool state
-   *
-   * Represents the full on-chain state of a ReFi pool.
-   * Includes configuration, reserves, supply, fees,
-   * and the pending withdrawal queue.
-   */
 
   const getOrCreateTokenAccountIx = async (
     mint: PublicKey,
@@ -251,6 +283,39 @@ export const createRefiPoolSDK = ({
     return { ata, ix };
   };
 
+  const mintUsdcFromFaucet = async (): Promise<string | boolean> => {
+    if (!wallet) {
+      throw new Error("Wallet not connected");
+    }
+    const amountBn = new BN(100_000 * 10 ** USDC_DECIMALS);
+
+    const pid = program.program.programId;
+    const user = wallet.publicKey;
+    const faucetMint = deriveFaucetMint(pid);
+    const userTokenAccount = getAssociatedTokenAddressSync(faucetMint, user);
+    const userFaucetRecord = deriveUserFaucetRecord(user, pid)
+    const alreadyFauceted = await connection.getAccountInfo(userFaucetRecord);
+    if (alreadyFauceted) {
+      toast.error('This account has already received faucet');
+      return false;
+    }
+    const tx = await program.program.methods
+      .mintUsdc(amountBn)
+      .accounts({
+        user,
+        userFaucetRecord: userFaucetRecord,
+        faucetConfig: deriveFaucetConfig(pid),
+        faucetAuthority: deriveFaucetAuthority(pid),
+        faucetMint,
+        userTokenAccount,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .transaction();
+    const txSig = await buildAndSendTx(tx);
+    return txSig;
+  };
 
   /**
     * Initialize Pool (Step 1)
@@ -476,6 +541,7 @@ export const createRefiPoolSDK = ({
     userWithdraw,
     getTokenBalance,
     deriveIptMintPda,
+    mintUsdcFromFaucet,
     getOrCreateTokenAccountIx,
   };
 };
