@@ -11,8 +11,8 @@ import {
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { PublicKey, Connection, SystemProgram, Transaction, SendTransactionError, TransactionInstruction } from '@solana/web3.js';
 import BN from 'bn.js';
-import { Pool } from './page';
 import { toast } from 'react-toastify';
+import { Pool } from './RefiAppClient';
 export const REFI_POOL_PROGRAM_ID = new PublicKey('FmEbrWpM7JJX6a7LSDGCAqmKjpbzvNwBAH1rv1M5utji');
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 export const USDC_MINT = new PublicKey('6gw9Tbuws5ay25dwNHicxd3W3PbyJUY11aRp8d2uwYe8');

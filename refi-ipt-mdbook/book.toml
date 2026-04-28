@@ -1,0 +1,12 @@
+[book]
+title = "REFI IPT On-Chain Reference"
+description = "Account layouts, instructions, and PDAs for the refi-ipt Anchor program."
+authors = ["REFI"]
+language = "en"
+
+[build]
+build-dir = "book"
+
+[output.html]
+default-theme = "light"
+git-repository-url = ""

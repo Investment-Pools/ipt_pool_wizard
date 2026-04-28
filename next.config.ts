@@ -5,7 +5,7 @@
 const nextConfig = {
   // ❌ Disable React Strict Mode (dev only behavior)
   reactStrictMode: false,
-  // Optional: environment variables
+  output: 'export',
   env: {
     NEXT_PUBLIC_APP_ENV: 'development',
   },

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VOLT Endpoints · VOLT API Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b0e14;--surface:#111620;--surface2:#181e2b;--border:#1e2a3a;--accent:#00e5ff;--accent2:#7b5ea7;--get:#00c896;--post:#f59e0b;--patch:#818cf8;--text:#cdd6f4;--muted:#6b7a9d;--sidebar-w:270px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000}
+.logo-text{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.sidebar-version{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.sidebar-desc{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-group{margin-bottom:4px}
+.nav-group-label{padding:8px 20px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 20px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;text-decoration:none;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,229,255,.06)}
+.nav-item.section-link{font-weight:700;color:var(--text)}
+.nav-item.section-link.active{color:var(--accent)}
+.nav-method{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;min-width:38px;text-align:center}
+.m-get{background:rgba(0,200,150,.15);color:var(--get)}
+.m-post{background:rgba(245,158,11,.15);color:var(--post)}
+.m-patch{background:rgba(129,140,248,.15);color:var(--patch)}
+.main{margin-left:var(--sidebar-w);flex:1;padding:0 0 80px;min-width:0}
+.main-content{animation:sceneIn .45s cubic-bezier(.22,1,.36,1) both}
+@media (prefers-reduced-motion:reduce){.main-content{animation:none}}
+@keyframes sceneIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:700;color:#fff}
+.topbar-base{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface2);padding:5px 12px;border-radius:6px;border:1px solid var(--border)}
+.topbar-base span{color:var(--accent)}
+.section{padding:48px 40px 0}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-icon{width:36px;height:36px;background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(123,94,167,.2));border:1px solid rgba(0,229,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.section-title{font-size:22px;font-weight:800;color:#fff}
+.section-desc{font-size:13px;color:var(--muted);margin-top:2px}
+.ep-hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;max-width:1000px}
+.hub-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 18px 16px;text-decoration:none;transition:all .2s;display:block;color:inherit}
+.hub-card:hover{border-color:rgba(0,229,255,.4);transform:translateY(-2px)}
+.hub-card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.hub-card-method{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;min-width:48px;text-align:center}
+.hub-card-path{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);word-break:break-all;line-height:1.35}
+.hub-card-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.hub-card-desc{font-size:12px;color:var(--muted);line-height:1.45}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><div class="logo-icon">V</div><div class="logo-text">VOLT API</div></div>
+    <div class="sidebar-version">v1.0.0 · Solana / NestJS</div>
+    <div class="sidebar-desc">Fundraising &amp; Yield Distribution on Blockchain</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-item" href="index.html">🏠 Introduction</a>
+      <a class="nav-item" href="all-apis.html">📋 All APIs</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">VOLT</div>
+      <a class="nav-item section-link active" href="volt.html">⚡ VOLT Endpoints</a>
+      <a class="nav-item" href="volt-chart.html"><span class="nav-method m-get">GET</span>Chart</a>
+      <a class="nav-item" href="volt-stats.html"><span class="nav-method m-get">GET</span>Stats</a>
+      <a class="nav-item" href="volt-fit-state.html"><span class="nav-method m-get">GET</span>FIT State</a>
+      <a class="nav-item" href="volt-transfer.html"><span class="nav-method m-post">POST</span>Transfer</a>
+      <a class="nav-item" href="volt-redemption.html"><span class="nav-method m-post">POST</span>Redemption</a>
+      <a class="nav-item" href="volt-illiquid.html"><span class="nav-method m-post">POST</span>Illiquid Assets</a>
+      <a class="nav-item" href="volt-deposit.html"><span class="nav-method m-post">POST</span>Admin Deposit</a>
+      <a class="nav-item" href="volt-apy.html"><span class="nav-method m-patch">PATCH</span>APY Target</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Withdraw Requests</div>
+      <a class="nav-item section-link" href="withdraw.html">💸 Withdraw Endpoints</a>
+      <a class="nav-item" href="withdraw-preview.html"><span class="nav-method m-get">GET</span>Preview</a>
+      <a class="nav-item" href="withdraw-submit.html"><span class="nav-method m-post">POST</span>Submit</a>
+      <a class="nav-item" href="withdraw-histories.html"><span class="nav-method m-get">GET</span>Histories</a>
+      <a class="nav-item" href="withdraw-cancel.html"><span class="nav-method m-post">POST</span>Cancel</a>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">⚡ VOLT Endpoints</div>
+    <div class="topbar-base">Base URL: <span>{{base_url}}/volt</span></div>
+  </div>
+
+  <div class="main-content">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div>
+        <div class="section-title">VOLT</div>
+        <div class="section-desc">Pick an endpoint — one API per documentation page</div>
+      </div>
+    </div>
+
+    <div class="ep-hub-grid">
+      <a class="hub-card" href="volt-chart.html">
+        <div class="hub-card-top"><span class="hub-card-method m-get">GET</span></div>
+        <div class="hub-card-path">/volt/chart</div>
+        <div class="hub-card-title">Chart</div>
+        <div class="hub-card-desc">Price or APY series for a time range</div>
+      </a>
+      <a class="hub-card" href="volt-stats.html">
+        <div class="hub-card-top"><span class="hub-card-method m-get">GET</span></div>
+        <div class="hub-card-path">/volt/stats</div>
+        <div class="hub-card-title">Stats</div>
+        <div class="hub-card-desc">Pool stats; optional JWT for user PnL</div>
+      </a>
+      <a class="hub-card" href="volt-fit-state.html">
+        <div class="hub-card-top"><span class="hub-card-method m-get">GET</span></div>
+        <div class="hub-card-path">/volt/fit-state</div>
+        <div class="hub-card-title">FIT State</div>
+        <div class="hub-card-desc">Active FIT collection state</div>
+      </a>
+      <a class="hub-card" href="volt-transfer.html">
+        <div class="hub-card-top"><span class="hub-card-method m-post">POST</span></div>
+        <div class="hub-card-path">/volt/transfer</div>
+        <div class="hub-card-title">Transfer</div>
+        <div class="hub-card-desc">Admin: USDC to claim wallet</div>
+      </a>
+      <a class="hub-card" href="volt-redemption.html">
+        <div class="hub-card-top"><span class="hub-card-method m-post">POST</span></div>
+        <div class="hub-card-path">/volt/redemption/</div>
+        <div class="hub-card-title">Redemption</div>
+        <div class="hub-card-desc">Admin: run redemption windows</div>
+      </a>
+      <a class="hub-card" href="volt-illiquid.html">
+        <div class="hub-card-top"><span class="hub-card-method m-post">POST</span></div>
+        <div class="hub-card-path">/volt/update-illiquid-fit-assets</div>
+        <div class="hub-card-title">Illiquid Assets</div>
+        <div class="hub-card-desc">Admin: update illiquid assets on-chain</div>
+      </a>
+      <a class="hub-card" href="volt-deposit.html">
+        <div class="hub-card-top"><span class="hub-card-method m-post">POST</span></div>
+        <div class="hub-card-path">/volt/admin-deposit-usdc</div>
+        <div class="hub-card-title">Admin Deposit</div>
+        <div class="hub-card-desc">Admin: deposit USDC into pool</div>
+      </a>
+      <a class="hub-card" href="volt-apy.html">
+        <div class="hub-card-top"><span class="hub-card-method m-patch">PATCH</span></div>
+        <div class="hub-card-path">/volt/config/apy-target</div>
+        <div class="hub-card-title">APY Target</div>
+        <div class="hub-card-desc">Admin: global or per-collection APY target</div>
+      </a>
+    </div>
+  </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GET Stats · VOLT API Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b0e14;--surface:#111620;--surface2:#181e2b;--border:#1e2a3a;--accent:#00e5ff;--accent2:#7b5ea7;--get:#00c896;--post:#f59e0b;--patch:#818cf8;--text:#cdd6f4;--muted:#6b7a9d;--code-bg:#0d1117;--sidebar-w:270px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000}
+.logo-text{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.sidebar-version{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.sidebar-desc{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-group{margin-bottom:4px}
+.nav-group-label{padding:8px 20px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 20px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;text-decoration:none;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,229,255,.06)}
+.nav-item.section-link{font-weight:700;color:var(--text)}
+.nav-item.section-link.active{color:var(--accent)}
+.nav-method{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;min-width:38px;text-align:center}
+.m-get{background:rgba(0,200,150,.15);color:var(--get)}
+.m-post{background:rgba(245,158,11,.15);color:var(--post)}
+.m-patch{background:rgba(129,140,248,.15);color:var(--patch)}
+.main{margin-left:var(--sidebar-w);flex:1;padding:0 0 80px;min-width:0}
+.main-content{animation:sceneIn .45s cubic-bezier(.22,1,.36,1) both}
+@media (prefers-reduced-motion:reduce){.main-content{animation:none}}
+@keyframes sceneIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:700;color:#fff}
+.topbar-base{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface2);padding:5px 12px;border-radius:6px;border:1px solid var(--border)}
+.topbar-base span{color:var(--accent)}
+.section{padding:48px 40px 0}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.section-icon{width:36px;height:36px;background:linear-gradient(135deg,rgba(0,229,255,.2),rgba(123,94,167,.2));border:1px solid rgba(0,229,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.section-title{font-size:22px;font-weight:800;color:#fff}
+.section-desc{font-size:13px;color:var(--muted);margin-top:2px}
+.endpoint{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;border-color:rgba(0,229,255,.35)}
+.endpoint-page .ep-header{cursor:default;pointer-events:none}
+.endpoint-page .ep-chevron{display:none}
+.ep-header{display:flex;align-items:center;gap:14px;padding:16px 20px;user-select:none}
+.ep-method{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:4px 10px;border-radius:5px;min-width:54px;text-align:center;letter-spacing:.5px}
+.ep-path{font-family:'JetBrains Mono',monospace;font-size:14px;color:#fff;flex:1}
+.ep-name{font-size:13px;color:var(--muted)}
+.ep-badges{display:flex;gap:6px;margin-left:auto;align-items:center}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.5px}
+.badge-optional{background:rgba(107,122,157,.1);color:var(--muted);border:1px solid var(--border)}
+.ep-chevron{color:var(--muted);font-size:12px}
+.ep-body{border-top:1px solid var(--border)}
+.ep-body-inner{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ep-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+.ep-desc{font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap}
+.ep-desc code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--code-bg);padding:1px 5px;border-radius:3px;color:var(--accent)}
+.params-table{width:100%;border-collapse:collapse;font-size:12px}
+.params-table th{text-align:left;padding:6px 10px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px}
+.params-table td{padding:8px 10px;border-bottom:1px solid rgba(30,42,58,.6);vertical-align:top}
+.params-table tr:last-child td{border-bottom:none}
+.param-name{font-family:'JetBrains Mono',monospace;color:#fff;font-size:12px}
+.param-type{font-family:'JetBrains Mono',monospace;color:var(--accent2);font-size:11px}
+.param-req{color:#f43f5e;font-size:10px;font-weight:700}
+.param-opt{color:var(--muted);font-size:10px}
+.param-desc{color:var(--muted);font-size:12px;line-height:1.5}
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.code-block-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.code-block-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.code-copy{font-size:10px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:inherit;transition:color .15s}
+.code-copy:hover{color:var(--accent)}
+.code-block pre{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;padding:14px;overflow-x:auto;color:var(--text)}
+.status-badge{display:inline-flex;align-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:8px}
+.s-200{background:rgba(0,200,150,.15);color:var(--get)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><div class="logo-icon">V</div><div class="logo-text">VOLT API</div></div>
+    <div class="sidebar-version">v1.0.0 · Solana / NestJS</div>
+    <div class="sidebar-desc">Fundraising &amp; Yield Distribution on Blockchain</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-item" href="index.html">🏠 Introduction</a>
+      <a class="nav-item" href="all-apis.html">📋 All APIs</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">VOLT</div>
+      <a class="nav-item section-link" href="volt.html">⚡ VOLT Endpoints</a>
+      <a class="nav-item" href="volt-chart.html"><span class="nav-method m-get">GET</span>Chart</a>
+      <a class="nav-item active" href="volt-stats.html"><span class="nav-method m-get">GET</span>Stats</a>
+      <a class="nav-item" href="volt-fit-state.html"><span class="nav-method m-get">GET</span>FIT State</a>
+      <a class="nav-item" href="volt-transfer.html"><span class="nav-method m-post">POST</span>Transfer</a>
+      <a class="nav-item" href="volt-redemption.html"><span class="nav-method m-post">POST</span>Redemption</a>
+      <a class="nav-item" href="volt-illiquid.html"><span class="nav-method m-post">POST</span>Illiquid Assets</a>
+      <a class="nav-item" href="volt-deposit.html"><span class="nav-method m-post">POST</span>Admin Deposit</a>
+      <a class="nav-item" href="volt-apy.html"><span class="nav-method m-patch">PATCH</span>APY Target</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Withdraw Requests</div>
+      <a class="nav-item section-link" href="withdraw.html">💸 Withdraw Endpoints</a>
+      <a class="nav-item" href="withdraw-preview.html"><span class="nav-method m-get">GET</span>Preview</a>
+      <a class="nav-item" href="withdraw-submit.html"><span class="nav-method m-post">POST</span>Submit</a>
+      <a class="nav-item" href="withdraw-histories.html"><span class="nav-method m-get">GET</span>Histories</a>
+      <a class="nav-item" href="withdraw-cancel.html"><span class="nav-method m-post">POST</span>Cancel</a>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">GET /volt/stats</div>
+    <div class="topbar-base">Base URL: <span>{{base_url}}/volt</span></div>
+  </div>
+
+  <div class="main-content">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div>
+        <div class="section-title">VOLT</div>
+        <div class="section-desc">Get Stats — pool statistics</div>
+      </div>
+    </div>
+
+    <div class="endpoint endpoint-page open" id="ep-stats">
+      <div class="ep-header">
+        <span class="ep-method m-get">GET</span>
+        <span class="ep-path">/volt/stats</span>
+        <span class="ep-name">Get Stats</span>
+        <div class="ep-badges"><span class="badge badge-optional">Auth Optional</span></div>
+        <span class="ep-chevron">▼</span>
+      </div>
+      <div class="ep-body">
+        <div class="ep-body-inner">
+          <div>
+            <div class="ep-section-label">Description</div>
+            <div class="ep-desc">Fetch overall VOLT pool statistics.
+
+<b>Auth:</b> Optional. If a valid JWT token is provided, the response will include <code>all_time_pnl_pct</code> for that user.</div>
+            <br/>
+            <div class="ep-section-label">Headers</div>
+            <table class="params-table">
+              <tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr>
+              <tr><td><span class="param-name">Authorization</span></td><td><span class="param-type">string</span></td><td><span class="param-opt">optional</span></td><td class="param-desc">Bearer JWT. Enables <code>all_time_pnl_pct</code> in response.</td></tr>
+            </table>
+          </div>
+          <div>
+            <div class="ep-section-label">Example Response</div>
+            <span class="status-badge s-200">200 OK</span>
+            <div class="code-block"><div class="code-block-header"><span class="code-block-lang">JSON</span><button type="button" class="code-copy" onclick="copyCode(this)">Copy</button></div>
+            <pre>{
+  "current_pps": 1.0034,
+  "total_ipt_supply": 980234.56,
+  "trailing_30d_apy": 5.87,
+  "thirty_day_change_pct": 0.48,
+  "liquidity_reserve_pct": 22.50,
+  "has_sufficient_data": true,
+  "all_time_pnl_pct": 1.23
+}</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+</main>
+
+<script>
+function copyCode(btn){
+  const pre=btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)});
+}
+</script>
+</body>
+</html>

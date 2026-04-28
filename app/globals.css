@@ -453,7 +453,11 @@ body {
 .m {
   background: var(--gbg);
   border-radius: var(--rs);
-  padding: 14px 16px
+  padding: 14px 16px;
+}
+
+.fr3 .m {
+  width: 50%;
 }
 
 .m .ml {

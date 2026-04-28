@@ -4,12 +4,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useInitProgramSdk } from '../hooks/useInitProgramSdk';
 import { useInitProgramToken } from '../hooks/useInitProgramToken';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Pool } from '../page';
 import { PublicKey } from '@solana/web3.js';
 import { copyToClipboard, getFormattedPrice, getPoolState, sleep, USDC_DECIMALS, USDC_MINT } from '../sdk';
 import { formatUnits } from 'viem';
 import { toast } from 'react-toastify';
 import { useTokenActions } from '../hooks/useTokenActions';
+import { Pool } from '../RefiAppClient';
 type Props = {
   poolAddress: PublicKey | null | undefined;
 }
@@ -80,10 +80,12 @@ const IptDashboard: React.FC<Props> = ({
     }
   }, [program, sdk, poolAddress]);
 
+  if (!publicKey) {
+    return (<div className='text-center'>Please login first to view the pool</div>)
+  }
 
   // ⛔ guard while loading
   if (loadingPool || !pool) {
-    console.log(pool);
     return (
       <div className="text-center py-12" id="dLoading">
         <div className="m-auto mt-5 w-10 h-10 border-2 border-gray-300 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
@@ -93,6 +95,7 @@ const IptDashboard: React.FC<Props> = ({
       </div>
     );
   }
+
 
 
   const onConfirmFaucet = async () => {
@@ -180,11 +183,8 @@ const IptDashboard: React.FC<Props> = ({
 
   return (
     <div id="dashView" className="">
-
       <div className="dh">
-
         <div className="dt">
-
           <div className="di">
             <svg height="18" viewBox="0 0 24 24" fill="none" stroke="#7C5CFC">
               <circle cx="12" cy="12" r="10"></circle>
@@ -203,7 +203,7 @@ const IptDashboard: React.FC<Props> = ({
             >
               View on Explorer
             </a>
-            <div style={{ fontSize: "12px", color: "var(--gt)", cursor: 'pointer' }} onClick={() => copyToClipboard(`${window.location.origin}/pool/${poolAddress?.toString()}`)}>
+            <div style={{ fontSize: "12px", color: "var(--gt)", cursor: 'pointer' }} onClick={() => copyToClipboard(`${window.location.origin}?address=${poolAddress?.toString()}`)}>
               Share Pool
             </div>
           </div>
